@@ -26,9 +26,8 @@ def load_data():
 
 df = load_data()
 
-st.subheader("📂 Raw Dataset")
-st.write(df.head())
-
+st.subheader("📂 Full Dataset (Scrollable)")
+st.dataframe(df, use_container_width=True, height=600)
 # -------------------------------
 # DATA PREPROCESSING
 # -------------------------------
