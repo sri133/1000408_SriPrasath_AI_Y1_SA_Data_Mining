@@ -13,7 +13,7 @@ from mlxtend.frequent_patterns import apriori, association_rules
 # -------------------------------
 st.set_page_config(page_title="Black Friday Analysis", layout="wide")
 
-st.title("🛍️ Black Friday Sales Data Analysis Dashboard")
+st.title("🛍️ Black Friday Sales Data Analysis")
 
 # -------------------------------
 # LOAD DATA (FULL DATASET FROM GITHUB)
