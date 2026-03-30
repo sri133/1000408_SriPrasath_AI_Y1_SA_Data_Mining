@@ -174,5 +174,5 @@ filtered_df = df.copy()
 if gender_filter != "All":
     filtered_df = filtered_df[filtered_df['Gender'] == gender_filter]
 
-st.subheader("Filtered Data")
-st.write(filtered_df.head())
+st.subheader("📂 Filtered Data (Full View)")
+st.dataframe(filtered_df, use_container_width=True, height=600)
