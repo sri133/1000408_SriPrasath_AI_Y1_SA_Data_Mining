@@ -26,8 +26,16 @@ def load_data():
 
 df = load_data()
 
-st.subheader("📂 Raw Dataset")
-st.write(df.head())
+st.subheader("📂 Full Dataset Viewer")
+
+rows_per_page = st.selectbox("Rows per page", [50, 100, 500, 1000], index=1)
+page = st.number_input("Page number", min_value=1, step=1)
+
+start = (page - 1) * rows_per_page
+end = start + rows_per_page
+
+st.write(f"Showing rows {start} to {end}")
+st.dataframe(df.iloc[start:end], use_container_width=True)
 
 # -------------------------------
 # DATA PREPROCESSING
