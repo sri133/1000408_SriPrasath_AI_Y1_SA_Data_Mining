@@ -45,6 +45,19 @@ st.write("Total rows:", len(df))
 st.dataframe(df, use_container_width=True, height=600)
 
 # -------------------------------
+# 🧹 DATA PREPROCESSING
+# -------------------------------
+st.header("🧹 Data Preprocessing")
+
+st.markdown("""
+- Missing values in **Product_Category_2** and **Product_Category_3** were filled with 0.
+- These 0 values indicate that the product does not belong to a secondary or tertiary category.
+- Converted categorical data where necessary.
+- Selected important features for clustering: Age, Occupation, Purchase.
+- No rows were removed to preserve full dataset integrity.
+""")
+
+# -------------------------------
 # 🔎 SEARCH DATA
 # -------------------------------
 st.subheader("🔎 Search by User ID")
@@ -110,6 +123,55 @@ sns.heatmap(df.corr(numeric_only=True), annot=True, ax=ax)
 st.pyplot(fig)
 
 # -------------------------------
+# 📊 SCATTER PLOT
+# -------------------------------
+st.subheader("📊 Purchase vs Occupation")
+
+fig, ax = plt.subplots()
+ax.scatter(df['Occupation'], df['Purchase'])
+ax.set_xlabel("Occupation")
+ax.set_ylabel("Purchase")
+
+st.pyplot(fig)
+
+# -------------------------------
+# 💰 AVG PURCHASE PER CATEGORY
+# -------------------------------
+st.subheader("💰 Average Purchase per Product Category")
+
+avg_purchase = df.groupby('Product_Category_1')['Purchase'].mean()
+
+fig, ax = plt.subplots()
+avg_purchase.plot(kind='bar', ax=ax)
+ax.set_ylabel("Average Purchase")
+
+st.pyplot(fig)
+
+# -------------------------------
+# 📉 ELBOW METHOD
+# -------------------------------
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+st.subheader("📉 Elbow Method for Optimal Clusters")
+
+X = df[['Age', 'Occupation', 'Purchase']]
+
+wcss = []
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, random_state=42)
+    kmeans.fit(X)
+    wcss.append(kmeans.inertia_)
+
+fig, ax = plt.subplots()
+ax.plot(range(1, 11), wcss, marker='o')
+ax.set_xlabel("Number of Clusters")
+ax.set_ylabel("WCSS")
+ax.set_title("Elbow Method")
+
+st.pyplot(fig)
+
+# -------------------------------
 # CLUSTERING
 # -------------------------------
 st.header("🤖 Customer Segmentation")
@@ -148,6 +210,27 @@ st.markdown("""
 - Medium spend clusters → Regular Customers  
 - High spend clusters → Premium Buyers  
 """)
+
+# -------------------------------
+# 🧠 CLUSTER LABELING
+# -------------------------------
+st.subheader("🧠 Customer Segments")
+
+cluster_avg = df.groupby('Cluster')['Purchase'].mean()
+
+labels = {}
+
+for cluster, value in cluster_avg.items():
+    if value < cluster_avg.mean():
+        labels[cluster] = "Budget Buyers"
+    elif value > cluster_avg.mean() * 1.2:
+        labels[cluster] = "Premium Buyers"
+    else:
+        labels[cluster] = "Regular Customers"
+
+df['Segment'] = df['Cluster'].map(labels)
+
+st.dataframe(df[['Cluster', 'Segment']].drop_duplicates())
 
 # -------------------------------
 # ASSOCIATION RULES
