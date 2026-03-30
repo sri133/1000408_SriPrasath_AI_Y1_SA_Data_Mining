@@ -27,12 +27,35 @@ def load_data():
 df = load_data()
 
 # -------------------------------
+# 🎯 DASHBOARD OVERVIEW
+# -------------------------------
+st.header("📊 Dashboard Overview")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Total Customers", len(df))
+col2.metric("Avg Purchase", int(df['Purchase'].mean()))
+col3.metric("Total Transactions", len(df))
+
+# -------------------------------
 # SHOW FULL DATASET
 # -------------------------------
 st.header("📂 Full Dataset (All Rows)")
 st.write("Total rows:", len(df))
 st.dataframe(df, use_container_width=True, height=600)
 
+# -------------------------------
+# 🔎 SEARCH DATA
+# -------------------------------
+st.subheader("🔎 Search by User ID")
+
+search_id = st.text_input("Enter User ID")
+
+if search_id:
+    result = df[df['User_ID'].astype(str).str.contains(search_id)]
+    st.write("Results Found:", len(result))
+    st.dataframe(result, use_container_width=True)
+    
 # -------------------------------
 # DATA PREPROCESSING
 # -------------------------------
@@ -110,6 +133,23 @@ ax.set_ylabel("Purchase")
 st.pyplot(fig)
 
 # -------------------------------
+# 🧠 CLUSTER INTERPRETATION
+# -------------------------------
+st.subheader("🧠 Cluster Insights")
+
+cluster_summary = df.groupby('Cluster')['Purchase'].mean().sort_values()
+
+for i, val in enumerate(cluster_summary):
+    st.write(f"Cluster {cluster_summary.index[i]} → Avg Purchase: {round(val,2)}")
+
+st.markdown("""
+### 🧾 Interpretation:
+- Low spend clusters → Budget Buyers  
+- Medium spend clusters → Regular Customers  
+- High spend clusters → Premium Buyers  
+""")
+
+# -------------------------------
 # ASSOCIATION RULES
 # -------------------------------
 st.header("🛒 Association Rule Mining")
@@ -123,6 +163,25 @@ rules = association_rules(frequent_items, metric="lift", min_threshold=1)
 st.write("Association Rules (Full Table)")
 st.dataframe(rules, use_container_width=True, height=600)
 
+# -------------------------------
+# 🔗 ASSOCIATION INSIGHTS
+# -------------------------------
+st.subheader("🔗 Association Insights")
+
+if not rules.empty:
+    top_rule = rules.sort_values(by="lift", ascending=False).iloc[0]
+
+    st.write("Top Rule:")
+    st.write(f"If {top_rule['antecedents']} → then {top_rule['consequents']}")
+
+    st.write(f"Confidence: {round(top_rule['confidence'],2)}")
+    st.write(f"Lift: {round(top_rule['lift'],2)}")
+
+    st.markdown("""
+### 💡 Business Use:
+- Use this combination for combo offers
+- Improve cross-selling strategy
+""")
 # -------------------------------
 # ANOMALY DETECTION
 # -------------------------------
@@ -140,24 +199,48 @@ st.write("Total anomalies detected:", len(outliers))
 st.dataframe(outliers, use_container_width=True, height=600)
 
 # -------------------------------
+# 🚨 ANOMALY INSIGHTS
+# -------------------------------
+st.subheader("🚨 Anomaly Insights")
+
+if len(outliers) > 0:
+    avg_purchase = df['Purchase'].mean()
+    outlier_avg = outliers['Purchase'].mean()
+
+    st.write(f"Normal Avg Purchase: {round(avg_purchase,2)}")
+    st.write(f"High Spender Avg: {round(outlier_avg,2)}")
+
+    st.markdown("""
+### 💡 Insight:
+- High spenders significantly exceed average purchase
+- These customers are valuable and should be targeted with premium offers
+""")
+
+# -------------------------------
 # FILTER SECTION (FULL DATA FILTERING)
 # -------------------------------
-st.header("🔍 Filter Data")
+# -------------------------------
+# 🔍 ADVANCED FILTERS
+# -------------------------------
+st.sidebar.header("🔍 Advanced Filters")
 
-gender = st.selectbox("Select Gender", ["All", 0, 1])
-age = st.multiselect("Select Age", sorted(df['Age'].dropna().unique()))
+gender = st.sidebar.multiselect("Select Gender", df['Gender'].unique())
+age = st.sidebar.multiselect("Select Age Group", sorted(df['Age'].dropna().unique()))
+category = st.sidebar.multiselect("Product Category 1", df['Product_Category_1'].unique())
 
 filtered_df = df.copy()
 
-if gender != "All":
-    filtered_df = filtered_df[filtered_df['Gender'] == gender]
+if gender:
+    filtered_df = filtered_df[filtered_df['Gender'].isin(gender)]
 
 if age:
     filtered_df = filtered_df[filtered_df['Age'].isin(age)]
 
-st.subheader("📂 Filtered Data (All Matching Rows)")
-st.write("Total filtered rows:", len(filtered_df))
+if category:
+    filtered_df = filtered_df[filtered_df['Product_Category_1'].isin(category)]
 
+st.subheader("📂 Filtered Data (Advanced)")
+st.write("Total rows:", len(filtered_df))
 st.dataframe(filtered_df, use_container_width=True, height=600)
 
 # -------------------------------
@@ -171,4 +254,25 @@ st.markdown("""
 - Strong product combinations exist for cross-selling.
 - High spenders are identified as anomalies.
 - Customer clusters show different buying behaviors.
+""")
+
+# -------------------------------
+# 📌 SMART INSIGHTS
+# -------------------------------
+st.header("📌 Smart Insights (Auto Generated)")
+
+top_age = df.groupby('Age')['Purchase'].mean().idxmax()
+top_category = df['Product_Category_1'].value_counts().idxmax()
+
+st.markdown(f"""
+### 🔎 Key Findings:
+- 💰 Age group **{top_age}** has the highest average spending.
+- 🛍️ Product Category **{top_category}** is the most popular.
+- 👥 Customer segmentation reveals multiple buying behaviors.
+- 🚨 High spenders detected indicate premium customer segment.
+
+### 📈 Business Recommendations:
+- Target **Age {top_age}** with premium offers.
+- Bundle products in Category **{top_category}** for cross-selling.
+- Focus marketing on high-value customer clusters.
 """)
