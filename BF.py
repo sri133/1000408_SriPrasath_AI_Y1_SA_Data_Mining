@@ -94,6 +94,199 @@ df['Purchase_scaled'] = scaler.fit_transform(df[['Purchase']])
 st.success("Data cleaned and processed!")
 
 # -------------------------------
+# 🔍 CLEAN FILTER SECTION
+# -------------------------------
+st.sidebar.header("🔍 Filters")
+
+# Create a copy
+filtered_df = df.copy()
+
+# -------------------------------
+# 🎯 BASIC FILTERS
+# -------------------------------
+gender = st.sidebar.multiselect(
+    "Gender",
+    df['Gender'].unique()
+)
+
+age = st.sidebar.multiselect(
+    "Age Group",
+    sorted(df['Age'].dropna().unique())
+)
+
+# -------------------------------
+# 💰 PURCHASE FILTER
+# -------------------------------
+min_val, max_val = int(df['Purchase'].min()), int(df['Purchase'].max())
+
+purchase_range = st.sidebar.slider(
+    "Purchase Range",
+    min_val, max_val,
+    (min_val, max_val)
+)
+
+# -------------------------------
+# 🧑‍💼 DEMOGRAPHIC FILTERS
+# -------------------------------
+occupation = st.sidebar.multiselect(
+    "Occupation",
+    sorted(df['Occupation'].unique())
+)
+
+marital = st.sidebar.selectbox(
+    "Marital Status",
+    ["All", 0, 1]
+)
+
+# -------------------------------
+# 🌍 LOCATION FILTERS
+# -------------------------------
+city = st.sidebar.multiselect(
+    "City Category",
+    df['City_Category'].unique()
+)
+
+stay = st.sidebar.multiselect(
+    "Years in Current City",
+    df['Stay_In_Current_City_Years'].unique()
+)
+
+# -------------------------------
+# 🛍️ PRODUCT FILTERS
+# -------------------------------
+category1 = st.sidebar.multiselect(
+    "Product Category 1",
+    df['Product_Category_1'].unique()
+)
+
+category2 = st.sidebar.multiselect(
+    "Product Category 2",
+    df['Product_Category_2'].unique()
+)
+
+# -------------------------------
+# 🔄 APPLY FILTERS
+# -------------------------------
+
+if gender:
+    filtered_df = filtered_df[filtered_df['Gender'].isin(gender)]
+
+if age:
+    filtered_df = filtered_df[filtered_df['Age'].isin(age)]
+
+filtered_df = filtered_df[
+    (filtered_df['Purchase'] >= purchase_range[0]) &
+    (filtered_df['Purchase'] <= purchase_range[1])
+]
+
+if occupation:
+    filtered_df = filtered_df[filtered_df['Occupation'].isin(occupation)]
+
+if marital != "All":
+    filtered_df = filtered_df[
+        filtered_df['Marital_Status'] == marital
+    ]
+
+if city:
+    filtered_df = filtered_df[filtered_df['City_Category'].isin(city)]
+
+if stay:
+    filtered_df = filtered_df[
+        filtered_df['Stay_In_Current_City_Years'].isin(stay)
+    ]
+
+if category1:
+    filtered_df = filtered_df[
+        filtered_df['Product_Category_1'].isin(category1)
+    ]
+
+if category2:
+    filtered_df = filtered_df[
+        filtered_df['Product_Category_2'].isin(category2)
+    ]
+
+# -------------------------------
+# 🔃 SORTING
+# -------------------------------
+sort_option = st.sidebar.selectbox(
+    "Sort By",
+    ["None", "Purchase High → Low", "Purchase Low → High"]
+)
+
+if sort_option == "Purchase High → Low":
+    filtered_df = filtered_df.sort_values(by="Purchase", ascending=False)
+
+elif sort_option == "Purchase Low → High":
+    filtered_df = filtered_df.sort_values(by="Purchase", ascending=True)
+
+# -------------------------------
+# 🔄 RESET BUTTON
+# -------------------------------
+if st.sidebar.button("Reset Filters"):
+    filtered_df = df.copy()
+
+# -------------------------------
+# 📂 DISPLAY FILTERED DATA
+# -------------------------------
+st.subheader("📂 Filtered Data (Full View)")
+st.write("Total rows:", len(filtered_df))
+
+# Column selector (advanced feature)
+columns = st.multiselect(
+    "Select Columns to Display",
+    df.columns.tolist(),
+    default=df.columns.tolist()
+)
+
+st.dataframe(filtered_df[columns], use_container_width=True, height=600)
+
+# -------------------------------
+# ⬇️ DOWNLOAD DATA FEATURE
+# -------------------------------
+st.subheader("⬇️ Download Data")
+
+download_option = st.selectbox(
+    "Select what to download",
+    ["Filtered Data", "Full Dataset", "Top 100 Records"]
+)
+
+# -------------------------------
+# 📂 SELECT DATASET
+# -------------------------------
+if download_option == "Filtered Data":
+    download_df = filtered_df
+
+elif download_option == "Full Dataset":
+    download_df = df
+
+elif download_option == "Top 100 Records":
+    download_df = filtered_df.head(100)
+
+# -------------------------------
+# 📑 COLUMN SELECTION
+# -------------------------------
+download_columns = st.multiselect(
+    "Select columns to download",
+    download_df.columns.tolist(),
+    default=download_df.columns.tolist()
+)
+
+# -------------------------------
+# 📄 CONVERT TO CSV
+# -------------------------------
+csv = download_df[download_columns].to_csv(index=False).encode('utf-8')
+
+# -------------------------------
+# ⬇️ DOWNLOAD BUTTON
+# -------------------------------
+st.download_button(
+    label="📥 Download Selected Data",
+    data=csv,
+    file_name="custom_data.csv",
+    mime="text/csv",
+)
+
+# -------------------------------
 # EDA
 # -------------------------------
 st.header("📊 Exploratory Data Analysis")
