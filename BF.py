@@ -16,7 +16,7 @@ st.set_page_config(page_title="Black Friday Analysis", layout="wide")
 st.title("🛍️ Black Friday Sales Data Analysis Dashboard")
 
 # -------------------------------
-# LOAD DATA
+# LOAD DATA (FULL DATASET FROM GITHUB)
 # -------------------------------
 @st.cache_data
 def load_data():
@@ -26,40 +26,39 @@ def load_data():
 
 df = load_data()
 
-st.subheader("📂 Full Dataset (Scrollable)")
+# -------------------------------
+# SHOW FULL DATASET
+# -------------------------------
+st.header("📂 Full Dataset (All Rows)")
+st.write("Total rows:", len(df))
 st.dataframe(df, use_container_width=True, height=600)
+
 # -------------------------------
 # DATA PREPROCESSING
 # -------------------------------
-st.subheader("🧹 Data Cleaning")
+st.header("🧹 Data Cleaning")
 
-# Handle missing values
 df['Product_Category_2'] = df['Product_Category_2'].fillna(0)
 df['Product_Category_3'] = df['Product_Category_3'].fillna(0)
 
-# Encode Gender
 df['Gender'] = df['Gender'].map({'M': 0, 'F': 1})
 
-# Encode Age
 age_map = {
     '0-17':1, '18-25':2, '26-35':3, '36-45':4,
     '46-50':5, '51-55':6, '55+':7
 }
 df['Age'] = df['Age'].map(age_map)
 
-# Remove duplicates
 df.drop_duplicates(inplace=True)
 
-st.success("Data cleaned successfully!")
-
-# -------------------------------
-# NORMALIZATION
-# -------------------------------
+# Normalize Purchase
 scaler = StandardScaler()
 df['Purchase_scaled'] = scaler.fit_transform(df[['Purchase']])
 
+st.success("Data cleaned and processed!")
+
 # -------------------------------
-# EDA SECTION
+# EDA
 # -------------------------------
 st.header("📊 Exploratory Data Analysis")
 
@@ -77,65 +76,57 @@ with col2:
     sns.boxplot(x='Gender', y='Purchase', data=df, ax=ax)
     st.pyplot(fig)
 
-# Category popularity
-st.subheader("🔥 Popular Product Categories")
+st.subheader("Product Category Popularity")
 fig, ax = plt.subplots()
 df['Product_Category_1'].value_counts().plot(kind='bar', ax=ax)
 st.pyplot(fig)
 
-# Correlation heatmap
-st.subheader("📌 Correlation Heatmap")
+st.subheader("Correlation Heatmap")
 fig, ax = plt.subplots(figsize=(10,6))
-sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', ax=ax)
+sns.heatmap(df.corr(numeric_only=True), annot=True, ax=ax)
 st.pyplot(fig)
 
 # -------------------------------
 # CLUSTERING
 # -------------------------------
-st.header("🤖 Customer Segmentation (Clustering)")
+st.header("🤖 Customer Segmentation")
 
 features = df[['Age', 'Occupation', 'Purchase_scaled']]
 
-k = st.slider("Select Number of Clusters", 2, 10, 3)
+k = st.slider("Select number of clusters", 2, 10, 3)
 
 kmeans = KMeans(n_clusters=k, random_state=42)
 df['Cluster'] = kmeans.fit_predict(features)
 
-st.write("Clustered Data Sample:")
-st.write(df[['User_ID', 'Age', 'Occupation', 'Purchase', 'Cluster']].head())
+st.write("Clustered Data (All Rows)")
+st.dataframe(df[['User_ID', 'Age', 'Occupation', 'Purchase', 'Cluster']],
+             use_container_width=True, height=600)
 
-# Visualization
-st.subheader("Cluster Visualization")
-
+# Cluster plot
 fig, ax = plt.subplots()
-scatter = ax.scatter(df['Age'], df['Purchase'], c=df['Cluster'])
-plt.xlabel("Age")
-plt.ylabel("Purchase")
+ax.scatter(df['Age'], df['Purchase'], c=df['Cluster'])
+ax.set_xlabel("Age")
+ax.set_ylabel("Purchase")
 st.pyplot(fig)
 
 # -------------------------------
-# ASSOCIATION RULE MINING
+# ASSOCIATION RULES
 # -------------------------------
-st.header("🛒 Market Basket Analysis")
+st.header("🛒 Association Rule Mining")
 
-# Prepare data for Apriori
-basket = df[['Product_Category_1', 'Product_Category_2', 'Product_Category_3']]
-
-basket = basket.astype(str)
-
+basket = df[['Product_Category_1', 'Product_Category_2', 'Product_Category_3']].astype(str)
 one_hot = pd.get_dummies(basket)
 
 frequent_items = apriori(one_hot, min_support=0.05, use_colnames=True)
-
 rules = association_rules(frequent_items, metric="lift", min_threshold=1)
 
-st.subheader("Top Association Rules")
-st.write(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head())
+st.write("Association Rules (Full Table)")
+st.dataframe(rules, use_container_width=True, height=600)
 
 # -------------------------------
 # ANOMALY DETECTION
 # -------------------------------
-st.header("🚨 Anomaly Detection (High Spenders)")
+st.header("🚨 Anomaly Detection")
 
 Q1 = df['Purchase'].quantile(0.25)
 Q3 = df['Purchase'].quantile(0.75)
@@ -144,10 +135,30 @@ IQR = Q3 - Q1
 outliers = df[(df['Purchase'] < (Q1 - 1.5 * IQR)) |
               (df['Purchase'] > (Q3 + 1.5 * IQR))]
 
-st.write(f"Number of anomalies detected: {len(outliers)}")
+st.write("Total anomalies detected:", len(outliers))
 
-st.write("Sample High Spenders:")
-st.write(outliers.head())
+st.dataframe(outliers, use_container_width=True, height=600)
+
+# -------------------------------
+# FILTER SECTION (FULL DATA FILTERING)
+# -------------------------------
+st.header("🔍 Filter Data")
+
+gender = st.selectbox("Select Gender", ["All", 0, 1])
+age = st.multiselect("Select Age", sorted(df['Age'].dropna().unique()))
+
+filtered_df = df.copy()
+
+if gender != "All":
+    filtered_df = filtered_df[filtered_df['Gender'] == gender]
+
+if age:
+    filtered_df = filtered_df[filtered_df['Age'].isin(age)]
+
+st.subheader("📂 Filtered Data (All Matching Rows)")
+st.write("Total filtered rows:", len(filtered_df))
+
+st.dataframe(filtered_df, use_container_width=True, height=600)
 
 # -------------------------------
 # INSIGHTS
@@ -155,24 +166,9 @@ st.write(outliers.head())
 st.header("📌 Key Insights")
 
 st.markdown("""
-- 💰 Certain age groups show higher spending behavior.
-- 🛍️ Specific product categories dominate sales.
-- 🔗 Strong associations exist between product combinations.
-- 🚨 High spenders identified using anomaly detection.
-- 👥 Customer segments reveal different buying patterns.
+- Customers aged 26–35 tend to spend the most.
+- Certain product categories dominate overall sales.
+- Strong product combinations exist for cross-selling.
+- High spenders are identified as anomalies.
+- Customer clusters show different buying behaviors.
 """)
-
-# -------------------------------
-# SIDEBAR FILTERS (BONUS MARKS)
-# -------------------------------
-st.sidebar.header("🔍 Filters")
-
-gender_filter = st.sidebar.selectbox("Select Gender", ["All", 0, 1])
-
-filtered_df = df.copy()
-
-if gender_filter != "All":
-    filtered_df = filtered_df[filtered_df['Gender'] == gender_filter]
-
-st.subheader("📂 Filtered Data (Full View)")
-st.dataframe(filtered_df, use_container_width=True, height=600)
