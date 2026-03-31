@@ -520,19 +520,6 @@ st.write("Total rows:", len(filtered_df))
 st.dataframe(filtered_df, use_container_width=True, height=600)
 
 # -------------------------------
-# INSIGHTS
-# -------------------------------
-st.header("📌 Key Insights")
-
-st.markdown("""
-- Customers aged 26–35 tend to spend the most.
-- Certain product categories dominate overall sales.
-- Strong product combinations exist for cross-selling.
-- High spenders are identified as anomalies.
-- Customer clusters show different buying behaviors.
-""")
-
-# -------------------------------
 # 📌 SMART INSIGHTS
 # -------------------------------
 st.header("📌 Smart Insights (Auto Generated)")
