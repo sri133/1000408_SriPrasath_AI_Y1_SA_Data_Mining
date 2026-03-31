@@ -195,10 +195,6 @@ if category1:
         filtered_df['Product_Category_1'].isin(category1)
     ]
 
-if category2:
-    filtered_df = filtered_df[
-        filtered_df['Product_Category_2'].isin(category2)
-    ]
 
 # -------------------------------
 # 🔃 SORTING
