@@ -503,3 +503,42 @@ st.markdown(f"""
 - Bundle products in Category **{top_category}** for cross-selling.
 - Focus marketing on high-value customer clusters.
 """)
+# -------------------------------
+# 📌 FINAL CONCLUSION
+# -------------------------------
+st.header("📌 Final Conclusion & Recommendations")
+
+st.markdown("""
+### 🔍 Key Takeaways:
+- Customers in specific age groups contribute the highest revenue.
+- Certain product categories dominate overall sales.
+- Customer segmentation reveals budget, regular, and premium buyers.
+- High-value customers (anomalies) contribute significantly to revenue.
+
+### 💡 Business Recommendations:
+- 🎯 Target high-spending customer segments with premium offers.
+- 🛍️ Bundle frequently purchased products to increase cross-selling.
+- 📢 Focus marketing on top-performing product categories.
+- 💎 Provide loyalty rewards for high-value customers.
+
+### 🚀 Final Insight:
+This analysis helps businesses make data-driven decisions to increase revenue,
+improve customer targeting, and optimize product strategies.
+""")
+
+# -------------------------------
+# 📊 PROJECT SUMMARY
+# -------------------------------
+st.header("📊 About App")
+
+st.markdown("""
+This application performs:
+- Exploratory Data Analysis (EDA)
+- Customer Segmentation using Clustering
+- Association Rule Mining
+- Anomaly Detection
+- Interactive Filtering & Search
+- Data Download Functionality
+
+The app is designed to provide actionable insights for business decision-making.
+""")
