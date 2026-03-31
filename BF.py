@@ -159,11 +159,6 @@ category1 = st.sidebar.multiselect(
     df['Product_Category_1'].unique()
 )
 
-category2 = st.sidebar.multiselect(
-    "Product Category 2",
-    df['Product_Category_2'].unique()
-)
-
 # -------------------------------
 # 🔄 APPLY FILTERS
 # -------------------------------
@@ -491,33 +486,6 @@ if len(outliers) > 0:
 - High spenders significantly exceed average purchase
 - These customers are valuable and should be targeted with premium offers
 """)
-
-# -------------------------------
-# FILTER SECTION (FULL DATA FILTERING)
-# -------------------------------
-# -------------------------------
-# 🔍 ADVANCED FILTERS
-# -------------------------------
-st.sidebar.header("🔍 Advanced Filters")
-
-gender = st.sidebar.multiselect("Select Gender", df['Gender'].unique())
-age = st.sidebar.multiselect("Select Age Group", sorted(df['Age'].dropna().unique()))
-category = st.sidebar.multiselect("Product Category 1", df['Product_Category_1'].unique())
-
-filtered_df = df.copy()
-
-if gender:
-    filtered_df = filtered_df[filtered_df['Gender'].isin(gender)]
-
-if age:
-    filtered_df = filtered_df[filtered_df['Age'].isin(age)]
-
-if category:
-    filtered_df = filtered_df[filtered_df['Product_Category_1'].isin(category)]
-
-st.subheader("📂 Filtered Data (Advanced)")
-st.write("Total rows:", len(filtered_df))
-st.dataframe(filtered_df, use_container_width=True, height=600)
 
 # -------------------------------
 # 📌 SMART INSIGHTS
